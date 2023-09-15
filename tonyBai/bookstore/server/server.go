@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bookstore/server/middleware"
 	"bookstore/store"
 	"encoding/json"
 	"github.com/gorilla/mux"
@@ -27,7 +28,8 @@ func NewBookStoreServer(addr string, s store.Store) *BookStoreServer { // 这里
 	router.HandleFunc("/book", bSrv.getAllBookHandler).Methods("GET")
 	router.HandleFunc("/book/{id}", bSrv.deleteBookHandler).Methods("DELETE")
 
-	bSrv.srv.Handler = middleware.Loggin()
+	// 验证路由和记录路由日志
+	bSrv.srv.Handler = middleware.Logging(middleware.Validating(router))
 
 	return bSrv
 }
