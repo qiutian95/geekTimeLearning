@@ -25,6 +25,6 @@ func Validating(next http.Handler) http.Handler {
 			http.Error(w, "invalid Contype-Type", http.StatusUnsupportedMediaType)
 			return
 		}
-		log.Printf("")
+		next.ServeHTTP(w, r)
 	})
 }
