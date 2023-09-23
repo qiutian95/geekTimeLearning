@@ -1,10 +1,13 @@
 package server
 
 import (
+	"bookstore/server/middleware"
 	"bookstore/store"
+	"context"
 	"encoding/json"
 	"github.com/gorilla/mux"
 	"net/http"
+	"time"
 )
 
 type BookStoreServer struct {
@@ -27,7 +30,8 @@ func NewBookStoreServer(addr string, s store.Store) *BookStoreServer { // 这里
 	router.HandleFunc("/book", bSrv.getAllBookHandler).Methods("GET")
 	router.HandleFunc("/book/{id}", bSrv.deleteBookHandler).Methods("DELETE")
 
-	bSrv.srv.Handler = middleware.Loggin()
+	// 验证路由和记录路由日志
+	bSrv.srv.Handler = middleware.Logging(middleware.Validating(router))
 
 	return bSrv
 }
@@ -46,7 +50,24 @@ func (bs *BookStoreServer) createBookHandler(w http.ResponseWriter, r *http.Requ
 }
 
 func (bs *BookStoreServer) updateBookHandler(w http.ResponseWriter, r *http.Request) {
+	id, ok := mux.Vars(r)["id"]
+	if !ok {
+		http.Error(w, "no id found in request", http.StatusBadRequest)
+		return
+	}
 
+	dec := json.NewDecoder(r.Body)
+	var book store.Book
+	if err := dec.Decode(&book); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	book.Id = id
+	if err := bs.s.Update(&book); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 }
 func (bs *BookStoreServer) getBookHandler(w http.ResponseWriter, r *http.Request) {
 	id, ok := mux.Vars(r)["id"]
@@ -64,7 +85,13 @@ func (bs *BookStoreServer) getBookHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (bs *BookStoreServer) getAllBookHandler(w http.ResponseWriter, r *http.Request) {
+	books, err := bs.s.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
+	response(w, books)
 }
 
 func (bs *BookStoreServer) deleteBookHandler(w http.ResponseWriter, r *http.Request) {
@@ -90,4 +117,23 @@ func response(w http.ResponseWriter, v any) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(data)
+}
+
+func (bs *BookStoreServer) ListenAndServe() (<-chan error, error) {
+	var err error
+	errChan := make(chan error)
+	go func() {
+		err = bs.srv.ListenAndServe()
+		errChan <- err
+	}()
+	select {
+	case err = <-errChan:
+		return nil, err
+	case <-time.After(time.Second):
+		return errChan, nil
+	}
+}
+
+func (bs *BookStoreServer) ShutDown(ctx context.Context) error {
+	return bs.srv.Shutdown(ctx)
 }
