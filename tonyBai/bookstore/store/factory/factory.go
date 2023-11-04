@@ -13,7 +13,7 @@ var (
 
 func Register(name string, p store.Store) {
 	providersMu.Lock()
-	defer providersMu.Unlock()
+	defer providersMu.Unlock() // 和下面的直接unlock不同的是：1.执行时机不同：unlock是立即释放锁 2.用途不同：defer是在函数结束时清理工作，而unlock是显示释放锁
 	if p == nil {
 		panic("store：Register provider is nil")
 	}
