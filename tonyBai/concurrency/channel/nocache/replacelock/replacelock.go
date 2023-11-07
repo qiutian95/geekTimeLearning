@@ -65,7 +65,7 @@ func main() {
 	fmt.Println("finish")
 }*/
 
-// 2.tony实现
+// 2.我参考tonyBai的实现
 type counter struct {
 	c chan int
 	i int
@@ -95,7 +95,8 @@ func main() {
 		wg.Add(1)
 		go func() {
 			cter.increase()
-			fmt.Println("count is ", cter.i)
+			//time.Sleep(time.Second)
+			fmt.Println("count is ", cter.i) // 此处打印的值存在重复，是因为在接收完之后，到我再读cter.i时(中间有延时)，读到的值是一样的
 			wg.Done()
 		}()
 	}
@@ -103,3 +104,43 @@ func main() {
 	wg.Wait()
 	fmt.Println("finish")
 }
+
+// 3.tonyBai实现
+/*type counter struct {
+	c chan int
+	i int
+}
+
+func newCounter() *counter {
+	cter := &counter{
+		c: make(chan int),
+		i: 0,
+	}
+	go func() {
+		for {
+			cter.i++
+			cter.c <- cter.i
+		}
+	}()
+	return cter
+}
+
+func (cter *counter) increase() int {
+	return <-cter.c
+}
+func main() {
+	cter := newCounter()
+	var wg sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func() {
+			v := cter.increase()
+			fmt.Println("count is ", v)
+			wg.Done()
+		}()
+	}
+
+	wg.Wait()
+	fmt.Println("finish")
+}
+*/
