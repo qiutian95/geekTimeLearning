@@ -43,7 +43,7 @@ func (m *MyFrameCodec) Encode(w io.Writer, payload FramePayload) error {
 
 func (m *MyFrameCodec) Decode(r io.Reader) (FramePayload, error) {
 	var totalLen int32
-	err := binary.Read(r, binary.BigEndian, &totalLen)
+	err := binary.Read(r, binary.BigEndian, &totalLen) // 大端模式读取前4个字节，然后将数据填充到totalLen中，而且读完之后，此时的读指针就到了第5个位置，也就是后面内容的开始位置
 	if err != nil {
 		return nil, err
 	}

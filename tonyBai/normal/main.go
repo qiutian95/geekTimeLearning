@@ -1,9 +1,10 @@
 package main
 
 import (
-	"errors"
+	"bytes"
+	"encoding/binary"
 	"fmt"
-	"net/http"
+	"io"
 )
 
 /*
@@ -88,7 +89,7 @@ func main() {
 	fmt.Println("counter is ", counter)
 }*/
 
-func greeting(w http.ResponseWriter, r *http.Request) {
+/*func greeting(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "hello Gopher!")
 }
 func main() {
@@ -99,4 +100,37 @@ func main() {
 	if err2 != nil {
 		panic(err2)
 	}
+
+
+}*/
+
+/*func main() {
+	var array = []byte{0x0, 0x0, 0x0, 0x21, 'h', 'e', 'l'}
+	var array1 = []byte{'h', 'e', 'l'}
+	fmt.Println("array:" + string(array))
+	fmt.Println("array:" + string(array1))
+}*/
+
+func main() {
+	// 模拟一个实现了 io.Reader 的对象
+	reader := bytes.NewBuffer([]byte{0x9, 0x0, 0x0, 0x0, 'h', 'e', 'l', 'l', 'o'}) // ASCII 编码的 "Hello"
+
+	var totalLen int32
+	err := binary.Read(reader, binary.LittleEndian, &totalLen)
+	fmt.Printf("totalLen:%d\n", int(totalLen))
+	if err != nil {
+		fmt.Println("Error reading:", err)
+		return
+	}
+
+	// 读取 5 个字节的数据
+	buf := make([]byte, 5)
+	_, err = io.ReadFull(reader, buf)
+	if err != nil {
+		fmt.Println("Error reading:", err)
+		return
+	}
+
+	// 打印读取到的字节数组
+	fmt.Printf("Read data: %v\n", buf)
 }
