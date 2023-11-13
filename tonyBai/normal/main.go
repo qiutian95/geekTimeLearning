@@ -1,12 +1,5 @@
 package main
 
-import (
-	"bytes"
-	"encoding/binary"
-	"fmt"
-	"io"
-)
-
 /*
 // 测试Go中的内存对齐
 type A struct {
@@ -111,7 +104,8 @@ func main() {
 	fmt.Println("array:" + string(array1))
 }*/
 
-func main() {
+// 验证读取的逻辑
+/*func main() {
 	// 模拟一个实现了 io.Reader 的对象
 	reader := bytes.NewBuffer([]byte{0x9, 0x0, 0x0, 0x0, 'h', 'e', 'l', 'l', 'o'}) // ASCII 编码的 "Hello"
 
@@ -133,4 +127,11 @@ func main() {
 
 	// 打印读取到的字节数组
 	fmt.Printf("Read data: %v\n", buf)
+}*/
+
+// 查看切片截取的操作
+func main() {
+	sourceSlice := []byte{'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n'}
+	println("slice[:8]" + string(sourceSlice[:8]))
+	println("slice[0:8]" + string(sourceSlice[0:8]))
 }
