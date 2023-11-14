@@ -28,7 +28,7 @@ func init() {
 	prometheus.MustRegister(ReqRecvTotal, RspSendTotal, ClientConnected)
 
 	metricsServer := &http.Server{
-		Addr: fmt.Sprintf("%d", metricsHTTPPort),
+		Addr: fmt.Sprintf(":%d", metricsHTTPPort),
 	}
 
 	mu := http.NewServeMux()
