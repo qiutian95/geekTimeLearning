@@ -57,6 +57,11 @@ func startClient(i int) {
 			conn.SetReadDeadline(time.Now().Add(time.Second * 5))
 			framePayload, err := frameCodec.Decode(conn)
 			if err != nil {
+				if e, ok := err.(net.Error); ok { // 次数判断超时后直接continue，进入一下段循环，直到判断到<-quit时，退出程序
+					if e.Timeout() {
+						continue
+					}
+				}
 				fmt.Println("client frameCode decode err: " + err.Error())
 				return
 			}
